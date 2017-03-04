@@ -1,0 +1,47 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+jar {
+    baseName = 'yelp-dataload'
+    version = '1.0-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(
+            "com.couchbase.client:spark-connector_2.11:$sparkVersion",
+            "org.springframework.boot:spring-boot-starter-log4j:$springBootLog4jVersion"
+//            "org.springframework.data:spring-data-hadoop-spark:$springDataHadoopVersion",
+//            "org.springframework.data:spring-data-hadoop-boot:$springDataHadoopVersion"
+    )
+    compile('org.springframework.boot:spring-boot-starter') {
+        exclude module: 'spring-boot-starter-logging'
+    }
+    runtime(
+            "org.hibernate:hibernate-validator:$hibernateValidatorVersion",
+            "org.apache.hadoop:hadoop-aws:$hadoopAwsVersion",
+            "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
+    )
+    compileOnly(
+            "org.projectlombok:lombok:$lombokVersion",
+            "org.apache.spark:spark-core_2.11:$sparkVersion",
+            "org.apache.spark:spark-streaming_2.11:$sparkVersion",
+            "org.apache.spark:spark-sql_2.11:$sparkVersion"
+    )
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}

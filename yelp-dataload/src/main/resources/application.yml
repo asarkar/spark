@@ -1,0 +1,14 @@
+spring.application.name: yelp-dataload
+logging.level.org.springframework: ERROR
+logging.level.org.abhijitsarkar: ERROR
+spring:
+  main:
+    banner-mode: "off"
+
+yelp.dataDirURL: ${YELP_DATADIR_URL}
+
+couchbase:
+  nodes: ${CB_NODES:localhost}
+  bucketName: ${CB_YELP_BUCKET_NAME:yelp}
+  bucketPassword: ${CB_YELP_BUCKET_PWD:}
+
