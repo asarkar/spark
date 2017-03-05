@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class YelpDataloadApp implements CommandLineRunner {
     @Autowired
-    private YelpDataloadService service;
+    private YelpS3ToCouchbaseDataloadService service;
 
     @Value("${yelp.dataDirURL}")
     String dataDirURL;

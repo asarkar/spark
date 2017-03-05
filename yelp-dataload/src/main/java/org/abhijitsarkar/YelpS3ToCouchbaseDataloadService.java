@@ -17,7 +17,7 @@ import javax.annotation.PreDestroy;
  */
 @RequiredArgsConstructor
 @Service
-public class YelpDataloadService {
+public class YelpS3ToCouchbaseDataloadService {
     private final SparkProperties sparkProperties;
     private final CouchbaseProperties couchbaseProperties;
 
