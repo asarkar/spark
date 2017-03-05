@@ -1,3 +1,3 @@
-export CB_NODES="${CB_NODES:-127.0.0.1}"
-export CB_YELP_BUCKET_NAME="${CB_YELP_BUCKET_NAME:-yelp}"
-export CB_YELP_BUCKET_PWD="${CB_YELP_BUCKET_PWD:-}"
+while IFS='=' read -r name value ; do
+    [ "${name:-}" ] && export "${name}"="${value}"
+done < <(env)
