@@ -5,6 +5,8 @@ language: scala
 services:
   - docker
 
+before_script: cd yelp-dataload
+
 script:
   - sbt clean docker:publishLocal
 
