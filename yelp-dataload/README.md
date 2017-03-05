@@ -16,8 +16,6 @@ Reads a Gzip JSON file from an HTTP endpoint, does basic transformation and writ
 
     ```
     $ docker run -d --name couchbase -p 8091-8094:8091-8094 -p 11210:11210 couchbase/server
-    ```
     Go to localhost:8091 and set up Couchbase.
-    ```
     $ docker run --rm -e CB_NODES=<cb_nodes> -it <image_id> <url> couchbase
     ```
