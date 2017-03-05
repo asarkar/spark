@@ -12,31 +12,34 @@ import scala.util.{Failure, Success, Try}
 /**
   * @author Abhijit Sarkar
   */
+// https://spark.apache.org/docs/latest/streaming-custom-receivers.html
 class HttpReceiver(val url: String) extends Receiver[String](MEMORY_AND_DISK) {
-  override def onStart(): Unit = {
-    Try(new URL(url).openConnection().asInstanceOf[HttpURLConnection]) match {
-      case Success(conn) => {
-        conn.setAllowUserInteraction(false)
-        conn.setInstanceFollowRedirects(true)
-        conn.setRequestMethod("GET")
-        conn.setReadTimeout(60 * 1000)
+  // Must not block
+  override def onStart(): Unit = new Thread(getClass.getSimpleName) {
+    receive
+  }.start
 
-        val gzipStream = new GZIPInputStream(conn.getInputStream)
+  private def receive = Try(new URL(url).openConnection().asInstanceOf[HttpURLConnection]) match {
+    case Success(conn) => {
+      conn.setAllowUserInteraction(false)
+      conn.setInstanceFollowRedirects(true)
+      conn.setRequestMethod("GET")
+      conn.setReadTimeout(60 * 1000)
 
-        Source.fromInputStream(gzipStream)
-          .getLines
-          .takeWhile(_ => !isStopped)
-          .foreach(store)
+      val gzipStream = new GZIPInputStream(conn.getInputStream)
 
-        conn.disconnect
-      }
-      case Failure(t) => stop(t.getMessage(), t)
+      Source.fromInputStream(gzipStream)
+        .getLines
+        .takeWhile(x => !isStopped && x != null)
+        .foreach(store)
+
+      conn.disconnect
     }
+    case Failure(t) => stop(t.getMessage, t)
   }
 
   override def onStop(): Unit = {}
 }
-
 
 object HttpReceiver {
   def apply(url: String) = new HttpReceiver(url)
