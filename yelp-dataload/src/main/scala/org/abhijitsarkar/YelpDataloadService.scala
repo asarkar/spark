@@ -2,7 +2,8 @@ package org.abhijitsarkar
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 
 import scala.util.Try
@@ -11,37 +12,34 @@ import scala.util.Try
   * @author Abhijit Sarkar
   */
 
-class YelpHttpToStdoutService(val sparkProperties: SparkProperties) {
-  val sc = {
-    SparkSession.builder()
-      .master(sparkProperties.master)
-      .appName("yelp-dataload")
-      .getOrCreate
-  }.sparkContext
+class YelpDataloadService(val terminationTimeoutMillis: Long,
+                          val sc: SparkContext,
+                          val sink: RDD[(String, String)] => Unit) {
   val ssc = new StreamingContext(sc, Milliseconds(1000))
 
-  import YelpHttpToStdoutService._
+  import YelpDataloadService._
 
   def load(url: String) = {
     ssc.receiverStream(HttpReceiver(url))
-      .foreachRDD(
-        _.filter(!_.isEmpty)
+      .foreachRDD(x => {
+        val rdd = x.filter(!_.isEmpty)
           // c.f. http://stackoverflow.com/questions/29295838/org-apache-spark-sparkexception-task-not-serializable
           .map(toTuple)
           .filter(_.isDefined)
           .map(_.get)
-          .foreach(println)
-      )
+        sink(rdd)
+      })
 
     ssc.start
-    ssc.awaitTerminationOrTimeout(sparkProperties.terminationTimeoutMillis)
+    ssc.awaitTerminationOrTimeout(terminationTimeoutMillis)
   }
 }
 
 import scala.collection.JavaConverters._
 
-object YelpHttpToStdoutService {
-  def apply(sparkProperties: SparkProperties): YelpHttpToStdoutService = new YelpHttpToStdoutService(sparkProperties)
+object YelpDataloadService {
+  def apply(terminationTimeoutMillis: Long, sc: SparkContext, sink: RDD[(String, String)] => Unit) =
+    new YelpDataloadService(terminationTimeoutMillis, sc, sink)
 
   val allowedFields = List("name", "rating", "review_count", "hours", "attributes")
 

@@ -12,9 +12,12 @@ scalacOptions := Seq(
 val sparkVersion = "2.1.0"
 val scalatestVersion = "3.0.1"
 val jacksonVersion = "2.8.7"
+val configVersion = "1.3.1"
 
 libraryDependencies ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
+  "com.couchbase.client" %% "spark-connector" % sparkVersion,
+  "com.typesafe" % "config" % configVersion,
   "org.apache.spark" %% "spark-core" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-streaming" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,
@@ -44,6 +47,7 @@ mappings in Universal := {
 }
 
 dockerRepository := Some("asarkar")
+dockerPackageMappings in Docker += (baseDirectory.value / "docker" / "spark-env.sh") -> "spark-env.sh"
 
 // The default commands are shown by a) bin/activator shell b) show dockerCommands
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
@@ -51,5 +55,7 @@ dockerCommands := Seq(
   Cmd("FROM", "asarkar/spark:2.1.0"),
   Cmd("WORKDIR", "/"),
   Cmd("COPY", "opt/docker/lib/*.jar", "/app.jar"),
+  Cmd("COPY", "spark-env.sh", "\"$SPARK_HOME\"/conf/"),
+  Cmd("RUN", "chmod +x \"$SPARK_HOME/conf/spark-env.sh\""),
   ExecCmd("ENTRYPOINT", "/opt/spark/bin/spark-submit", "/app.jar")
 )

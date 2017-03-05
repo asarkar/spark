@@ -1,0 +1,13 @@
+sudo: required
+
+language: scala
+
+services:
+  - docker
+
+script:
+  - sbt clean docker:publishLocal
+
+after_success:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push asarkar/yelp-dataload
