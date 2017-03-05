@@ -25,7 +25,7 @@ class HttpReceiver(val url: String) extends Receiver[String](MEMORY_AND_DISK) {
 
         Source.fromInputStream(gzipStream)
           .getLines
-          .takeWhile(x => !isStopped && x != null)
+          .takeWhile(_ => !isStopped)
           .foreach(store)
 
         conn.disconnect
