@@ -1,7 +1,6 @@
 package org.abhijitsarkar
 
 import com.couchbase.client.java.document.RawJsonDocument
-import com.couchbase.spark.StoreMode.UPSERT
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -28,7 +27,7 @@ object YelpDataloadApp extends App {
 
       val couchbaseSink = (rdd: RDD[(String, String)]) =>
         rdd.map(t => RawJsonDocument.create(t._1, t._2))
-          .saveToCouchbase(bucketName, UPSERT)
+          .saveToCouchbase()
       val sc = scBuilder
         .config("spark.couchbase.nodes", couchbaseConf.getString("nodes"))
         .config(s"spark.couchbase.bucket.$bucketName",

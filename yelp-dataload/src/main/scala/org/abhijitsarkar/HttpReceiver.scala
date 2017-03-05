@@ -39,5 +39,5 @@ class HttpReceiver(val url: String) extends Receiver[String](MEMORY_AND_DISK) {
 
 
 object HttpReceiver {
-  def apply(url: String): HttpReceiver = new HttpReceiver(url)
+  def apply(url: String) = new HttpReceiver(url)
 }

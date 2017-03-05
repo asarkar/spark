@@ -24,7 +24,7 @@ class YelpDataloadService(val terminationTimeoutMillis: Long,
       .foreachRDD(x => {
         val rdd = x.filter(!_.isEmpty)
           // c.f. http://stackoverflow.com/questions/29295838/org-apache-spark-sparkexception-task-not-serializable
-          .map(toTuple)
+          .map(maybeToTuple)
           .filter(_.isDefined)
           .map(_.get)
         sink(rdd)
@@ -43,16 +43,16 @@ object YelpDataloadService {
 
   val allowedFields = List("name", "rating", "review_count", "hours", "attributes")
 
-  def toTuple(content: String) = {
+  def maybeToTuple(content: String) = {
     val objectMapper = new ObjectMapper
 
     Try(objectMapper.readValue(content, classOf[ObjectNode]))
       .filter(_.has("id"))
       .flatMap(node => {
-        val id = node.get("id").textValue
+        def id = node.get("id").textValue
 
         Try(objectMapper.writeValueAsString(node.retain(allowedFields.asJava)))
-          .map(x => Some(Tuple2(id, x)))
+          .map(x => Some((id, x)))
       })
       .getOrElse(None)
   }
