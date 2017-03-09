@@ -1,0 +1,196 @@
+{
+	"paragraphs": [{
+		"user": "anonymous",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {},
+			"editorSetting": {
+				"language": "scala"
+			},
+			"editorMode": "ace/mode/scala"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489049970473_1142416421",
+		"id": "20170309-085930_989509925",
+		"dateCreated": "2017-03-09T08:59:30+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:24491",
+		"text": "val df = spark.read.json(\"/srv/metrics/gateway/*.json\")",
+		"dateUpdated": "2017-03-09T09:01:30+0000",
+		"dateFinished": "2017-03-09T09:01:31+0000",
+		"dateStarted": "2017-03-09T09:01:30+0000",
+		"results": {
+			"code": "SUCCESS",
+			"msg": [{
+				"type": "TEXT",
+				"data": "\ndf: org.apache.spark.sql.DataFrame = [classes: bigint, classes.loaded: bigint ... 73 more fields]\n"
+			}]
+		}
+	}, {
+		"user": "anonymous",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {},
+			"editorSetting": {
+				"language": "scala"
+			},
+			"editorMode": "ace/mode/scala"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489049984543_273653404",
+		"id": "20170309-085944_1077928649",
+		"dateCreated": "2017-03-09T08:59:44+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:24553",
+		"text": "val tbl = df.select(col(\"`gc.ps_scavenge.count`\").as(\"gcCount\"), col(\"`gc.ps_scavenge.time`\").as(\"gcTime\"),\ncol(\"heap\"), col(\"`heap.used`\").as(\"heapUsed\"), col(\"mem\").as(\"memory\"), ($\"mem\" - $\"`mem.free`\").as(\"usedMemory\"),\ncol(\"threads\"), col(\"`threads.peak`\").as(\"peakThreads\"), col(\"`threads.totalStarted`\").as(\"totalStartedThreads\"))\nimport org.apache.spark.sql.DataFrame\nimport org.apache.spark.sql.types.{LongType, StructField, StructType}\nimport org.apache.spark.sql.Row\n\nval seqTbl = sqlContext.createDataFrame(\n    tbl.rdd.zipWithIndex.map(ln => Row.fromSeq(Seq(ln._2) ++ ln._1.toSeq)),\n    StructType(Array(StructField(\"time\", LongType, false)) ++ tbl.schema.fields))\n    \nseqTbl.createOrReplaceTempView(\"metrics\")",
+		"dateUpdated": "2017-03-09T09:01:30+0000",
+		"dateFinished": "2017-03-09T09:01:32+0000",
+		"dateStarted": "2017-03-09T09:01:31+0000",
+		"results": {
+			"code": "SUCCESS",
+			"msg": [{
+				"type": "TEXT",
+				"data": "\ntbl: org.apache.spark.sql.DataFrame = [gcCount: bigint, gcTime: bigint ... 7 more fields]\n\nimport org.apache.spark.sql.DataFrame\n\nimport org.apache.spark.sql.types.{LongType, StructField, StructType}\n\nimport org.apache.spark.sql.Row\n\nseqTbl: org.apache.spark.sql.DataFrame = [time: bigint, gcCount: bigint ... 8 more fields]\n"
+			}]
+		}
+	}, {
+		"user": "anonymous",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {
+				"0": {
+					"graph": {
+						"mode": "lineChart",
+						"height": 300,
+						"optionOpen": true,
+						"setting": {
+							"lineChart": {}
+						},
+						"commonSetting": {},
+						"keys": [{
+							"name": "time",
+							"index": 0,
+							"aggr": "sum"
+						}, {
+							"name": "heapUsed",
+							"index": 4,
+							"aggr": "sum"
+						}, {
+							"name": "usedMemory",
+							"index": 6,
+							"aggr": "sum"
+						}, {
+							"name": "heap",
+							"index": 3,
+							"aggr": "sum"
+						}, {
+							"name": "memory",
+							"index": 5,
+							"aggr": "sum"
+						}],
+						"groups": [],
+						"values": [{
+							"name": "time",
+							"index": 0,
+							"aggr": "sum"
+						}, {
+							"name": "heapUsed",
+							"index": 4,
+							"aggr": "sum"
+						}, {
+							"name": "usedMemory",
+							"index": 6,
+							"aggr": "sum"
+						}, {
+							"name": "heap",
+							"index": 3,
+							"aggr": "sum"
+						}, {
+							"name": "memory",
+							"index": 5,
+							"aggr": "sum"
+						}]
+					},
+					"helium": {}
+				}
+			},
+			"editorSetting": {
+				"language": "sql"
+			},
+			"editorMode": "ace/mode/sql"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489049992405_1640681570",
+		"id": "20170309-085952_1127758874",
+		"dateCreated": "2017-03-09T08:59:52+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:24641",
+		"text": "%sql\nselect * from metrics",
+		"dateUpdated": "2017-03-09T09:01:30+0000",
+		"dateFinished": "2017-03-09T09:01:32+0000",
+		"dateStarted": "2017-03-09T09:01:31+0000",
+		"results": {
+			"code": "SUCCESS",
+			"msg": [{
+				"type": "TABLE",
+				"data": "time\tgcCount\tgcTime\theap\theapUsed\tmemory\tusedMemory\tthreads\tpeakThreads\ttotalStartedThreads\n0\t6700\t48417\t466432\t239197\t482956\t347882\t67\t265\t2129\n1\t6702\t48425\t466432\t210667\t483090\t319486\t67\t265\t2129\n2\t6703\t48429\t466432\t244078\t483430\t353237\t67\t265\t2129\n3\t6699\t48414\t466432\t250593\t482370\t359204\t66\t265\t2128\n4\t6699\t48414\t466432\t256642\t482398\t365281\t67\t265\t2129\n5\t6700\t48417\t466432\t214023\t482885\t322637\t67\t265\t2129\n6\t6716\t48518\t466432\t210930\t482590\t319249\t67\t265\t2129\n7\t6720\t48557\t466432\t209567\t482595\t317891\t68\t265\t2130\n8\t6709\t48459\t466432\t206252\t482542\t314523\t67\t265\t2129\n9\t6712\t48476\t466432\t254444\t482552\t362725\t67\t265\t2129\n10\t6711\t48472\t466432\t244001\t482551\t352281\t67\t265\t2129\n11\t6699\t48414\t466432\t243599\t482347\t352187\t65\t265\t2127\n"
+			}]
+		}
+	}, {
+		"text": "%sql\n",
+		"user": "anonymous",
+		"dateUpdated": "2017-03-09T09:01:30+0000",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {},
+			"editorSetting": {
+				"language": "sql"
+			},
+			"editorMode": "ace/mode/sql"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489050021168_-559884568",
+		"id": "20170309-090021_419203429",
+		"dateCreated": "2017-03-09T09:00:21+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:24755"
+	}],
+	"name": "memory",
+	"id": "2CAMK542R",
+	"angularObjects": {
+		"2CDCYTBBJ:shared_process": []
+	},
+	"config": {
+		"looknfeel": "default",
+		"personalizedMode": "false"
+	},
+	"info": {}
+}

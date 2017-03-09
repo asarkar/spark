@@ -1,0 +1,172 @@
+{
+	"paragraphs": [{
+		"user": "anonymous",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {},
+			"editorSetting": {
+				"language": "scala"
+			},
+			"editorMode": "ace/mode/scala"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489050136162_1123376545",
+		"id": "20170309-090216_184934403",
+		"dateCreated": "2017-03-09T09:02:16+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:26222",
+		"text": "val df = spark.read.json(\"/srv/metrics/subscription/*.json\")",
+		"dateUpdated": "2017-03-09T09:02:25+0000",
+		"dateFinished": "2017-03-09T09:02:26+0000",
+		"dateStarted": "2017-03-09T09:02:25+0000",
+		"results": {
+			"code": "SUCCESS",
+			"msg": [{
+				"type": "TEXT",
+				"data": "\ndf: org.apache.spark.sql.DataFrame = [classes: bigint, classes.loaded: bigint ... 35 more fields]\n"
+			}]
+		}
+	}, {
+		"user": "anonymous",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {},
+			"editorSetting": {
+				"language": "scala"
+			},
+			"editorMode": "ace/mode/scala"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489050145005_-1715869479",
+		"id": "20170309-090225_830694047",
+		"dateCreated": "2017-03-09T09:02:25+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:26284",
+		"text": "val tbl = df.select(col(\"`gc.ps_scavenge.count`\").as(\"gcCount\"), col(\"`gc.ps_scavenge.time`\").as(\"gcTime\"),\ncol(\"heap\"), col(\"`heap.used`\").as(\"heapUsed\"), col(\"mem\").as(\"memory\"), ($\"mem\" - $\"`mem.free`\").as(\"usedMemory\"),\ncol(\"threads\"), col(\"`threads.peak`\").as(\"peakThreads\"), col(\"`threads.totalStarted`\").as(\"totalStartedThreads\"))\nimport org.apache.spark.sql.DataFrame\nimport org.apache.spark.sql.types.{LongType, StructField, StructType}\nimport org.apache.spark.sql.Row\n\nval seqTbl = sqlContext.createDataFrame(\n    tbl.rdd.zipWithIndex.map(ln => Row.fromSeq(Seq(ln._2) ++ ln._1.toSeq)),\n    StructType(Array(StructField(\"time\", LongType, false)) ++ tbl.schema.fields))\n\nseqTbl.createOrReplaceTempView(\"metrics\")",
+		"dateUpdated": "2017-03-09T09:02:36+0000",
+		"dateFinished": "2017-03-09T09:02:37+0000",
+		"dateStarted": "2017-03-09T09:02:36+0000",
+		"results": {
+			"code": "SUCCESS",
+			"msg": [{
+				"type": "TEXT",
+				"data": "\ntbl: org.apache.spark.sql.DataFrame = [gcCount: bigint, gcTime: bigint ... 7 more fields]\n\nimport org.apache.spark.sql.DataFrame\n\nimport org.apache.spark.sql.types.{LongType, StructField, StructType}\n\nimport org.apache.spark.sql.Row\n\nseqTbl: org.apache.spark.sql.DataFrame = [time: bigint, gcCount: bigint ... 8 more fields]\n"
+			}]
+		}
+	}, {
+		"user": "anonymous",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {
+				"0": {
+					"graph": {
+						"mode": "lineChart",
+						"height": 300,
+						"optionOpen": true,
+						"setting": {
+							"lineChart": {}
+						},
+						"commonSetting": {},
+						"keys": [{
+							"name": "time",
+							"index": 0,
+							"aggr": "sum"
+						}, {
+							"name": "threads",
+							"index": 7,
+							"aggr": "sum"
+						}],
+						"groups": [],
+						"values": [{
+							"name": "time",
+							"index": 0,
+							"aggr": "sum"
+						}, {
+							"name": "threads",
+							"index": 7,
+							"aggr": "sum"
+						}]
+					},
+					"helium": {}
+				}
+			},
+			"editorSetting": {
+				"language": "sql"
+			},
+			"editorMode": "ace/mode/sql"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489050156198_-149926131",
+		"id": "20170309-090236_943075999",
+		"dateCreated": "2017-03-09T09:02:36+0000",
+		"status": "FINISHED",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:26374",
+		"text": "%sql\nselect * from metrics",
+		"dateUpdated": "2017-03-09T09:03:41+0000",
+		"dateFinished": "2017-03-09T09:02:43+0000",
+		"dateStarted": "2017-03-09T09:02:42+0000",
+		"results": {
+			"code": "SUCCESS",
+			"msg": [{
+				"type": "TABLE",
+				"data": "time\tgcCount\tgcTime\theap\theapUsed\tmemory\tusedMemory\tthreads\tpeakThreads\ttotalStartedThreads\n0\t4417\t114070\t522240\t385405\t636163\t499329\t145\t345\t2487\n1\t4417\t114070\t522240\t412356\t636163\t526280\t145\t345\t2487\n2\t4396\t113441\t523264\t349786\t637192\t463715\t112\t345\t2454\n3\t4397\t113455\t522240\t347087\t636168\t461016\t129\t345\t2471\n4\t4399\t113528\t521728\t273597\t635656\t387526\t129\t345\t2471\n5\t4402\t113600\t521728\t315085\t635641\t428999\t129\t345\t2471\n6\t4405\t113667\t522752\t284437\t636665\t398351\t129\t345\t2471\n7\t4406\t113727\t522752\t411392\t636666\t525307\t129\t345\t2471\n8\t4409\t113813\t522240\t393229\t636163\t507153\t129\t345\t2471\n9\t4411\t113916\t522240\t384535\t636163\t498459\t129\t345\t2471\n10\t4414\t113978\t521728\t387208\t635651\t501132\t129\t345\t2471\n11\t4420\t114191\t522240\t416505\t636168\t530434\t145\t345\t2487\n12\t4398\t113500\t522752\t261534\t636680\t375463\t129\t345\t2471\n13\t4399\t113528\t521728\t373363\t635656\t487292\t129\t345\t2471\n14\t4400\t113547\t522240\t350309\t636168\t464238\t129\t345\t2471\n15\t4401\t113571\t521216\t309818\t635144\t423711\t129\t345\t2471\n16\t4403\t113619\t522752\t308274\t636665\t422188\t129\t345\t2471\n17\t4404\t113645\t522752\t312008\t636665\t425899\t129\t345\t2471\n18\t4406\t113727\t522752\t268626\t636666\t382474\t129\t345\t2471\n19\t4407\t113754\t521728\t404384\t635642\t518299\t129\t345\t2471\n20\t4408\t113792\t522240\t421950\t636163\t535874\t129\t345\t2471\n21\t4410\t113892\t522240\t380106\t636163\t494030\t129\t345\t2471\n22\t4412\t113933\t521728\t388609\t635651\t502533\t129\t345\t2471\n23\t4413\t113960\t521216\t391913\t635139\t505837\t129\t345\t2471\n24\t4416\t114031\t522240\t374530\t636163\t488420\t140\t345\t2482\n25\t4418\t114123\t522240\t278619\t636163\t392543\t145\t345\t2487\n26\t4376\t112780\t522752\t408658\t636719\t522626\t72\t345\t2414\n27\t4384\t112957\t522752\t380924\t636712\t494885\t76\t345\t2418\n28\t4386\t113028\t523264\t342296\t637224\t456257\t76\t345\t2418\n29\t4387\t113043\t523264\t309936\t637221\t423894\t77\t345\t2419\n30\t4389\t113216\t523264\t288616\t637221\t402574\t77\t345\t2419\n31\t4390\t113237\t523264\t295112\t637212\t409061\t85\t345\t2427\n32\t4394\t113368\t523264\t267858\t637192\t381787\t88\t345\t2430\n33\t4415\t114003\t522240\t373859\t636163\t487783\t129\t345\t2471\n34\t4418\t114123\t522240\t374977\t636163\t488901\t145\t345\t2487\n35\t4419\t114168\t522240\t328345\t636163\t442238\t145\t345\t2487\n36\t4369\t112580\t522240\t342812\t636192\t456765\t64\t345\t2406\n37\t4375\t112740\t522752\t301043\t636629\t414921\t72\t345\t2414\n38\t4377\t112795\t522752\t370829\t636719\t484797\t72\t345\t2414\n39\t4379\t112848\t522752\t320534\t636719\t434502\t72\t345\t2414\n40\t4382\t112902\t522752\t415258\t636723\t529230\t72\t345\t2414\n41\t4383\t112922\t522240\t390935\t636211\t504907\t72\t345\t2414\n42\t4385\t112987\t523264\t354373\t637224\t468180\t76\t345\t2418\n43\t4388\t113160\t523264\t284814\t637221\t398772\t77\t345\t2419\n44\t4391\t113261\t523264\t286792\t637212\t400741\t85\t345\t2427\n45\t4392\t113285\t523264\t280077\t637212\t394026\t85\t345\t2427\n46\t4394\t113368\t523264\t420076\t637192\t533925\t89\t345\t2431\n47\t4395\t113405\t523264\t404251\t637192\t518180\t89\t345\t2431\n48\t4398\t113500\t522752\t336666\t636680\t450595\t129\t345\t2471\n49\t4419\t114168\t522240\t418998\t636168\t532927\t145\t345\t2487\n50\t4362\t112331\t513536\t273719\t627470\t387654\t56\t345\t2398\n51\t4365\t112449\t517632\t390399\t631580\t504348\t61\t345\t2403\n52\t4366\t112473\t517632\t309882\t631580\t423831\t61\t345\t2403\n53\t4366\t112473\t517632\t407449\t631600\t521418\t61\t345\t2403\n54\t4367\t112532\t522240\t342346\t636208\t456315\t61\t345\t2403\n55\t4368\t112546\t522240\t283798\t636192\t397751\t61\t345\t2403\n56\t4371\t112640\t521216\t356115\t635168\t470068\t64\t345\t2406\n57\t4376\t112780\t522752\t256361\t636629\t370239\t72\t345\t2414\n58\t4358\t112187\t522240\t256605\t636167\t370533\t56\t345\t2398\n59\t4393\t113342\t523264\t276114\t637219\t390070\t85\t345\t2427\n60\t4357\t112156\t522240\t340203\t636162\t454126\t56\t345\t2398\n61\t4358\t112187\t522240\t377374\t636172\t491307\t56\t345\t2398\n62\t4359\t112224\t522240\t252141\t636172\t366074\t56\t345\t2398\n63\t4359\t112224\t522240\t300833\t636174\t414768\t56\t345\t2398\n64\t4359\t112224\t522240\t355132\t636174\t469067\t56\t345\t2398\n65\t4359\t112224\t522240\t408963\t636174\t522898\t56\t345\t2398\n66\t4360\t112249\t517632\t285857\t631566\t399792\t56\t345\t2398\n67\t4360\t112249\t517632\t340290\t631566\t454225\t56\t345\t2398\n68\t4360\t112249\t517632\t402413\t631566\t516348\t56\t345\t2398\n69\t4361\t112273\t514560\t365424\t628494\t479359\t56\t345\t2398\n70\t4362\t112331\t513536\t351005\t627469\t464939\t56\t345\t2398\n71\t4363\t112349\t509440\t267649\t623373\t381309\t56\t345\t2398\n72\t4363\t112349\t509440\t346831\t623376\t460768\t57\t345\t2399\n73\t4364\t112364\t508416\t357010\t622351\t470946\t59\t345\t2401\n74\t4365\t112449\t517632\t298489\t631589\t412447\t61\t345\t2403\n75\t4368\t112546\t522240\t401162\t636192\t515115\t61\t345\t2403\n76\t4370\t112625\t522240\t275912\t636192\t389865\t64\t345\t2406\n77\t4370\t112625\t522240\t392246\t636192\t506199\t64\t345\t2406\n78\t4372\t112660\t521728\t320373\t635604\t434250\t64\t345\t2406\n79\t4373\t112689\t522752\t268278\t636628\t382155\t65\t345\t2407\n80\t4373\t112689\t522752\t385240\t636628\t499117\t65\t345\t2407\n81\t4357\t112156\t522240\t380156\t636166\t494082\t56\t345\t2398\n82\t4374\t112719\t522752\t355237\t636629\t469115\t65\t345\t2407\n83\t4378\t112822\t522752\t339119\t636719\t453087\t72\t345\t2414\n84\t4380\t112869\t522752\t297786\t636720\t411755\t72\t345\t2414\n85\t4382\t112902\t522752\t264076\t636721\t378046\t72\t345\t2414\n86\t4357\t112156\t522240\t403243\t636166\t517170\t56\t345\t2398\n87\t4358\t112187\t522240\t282293\t636170\t396224\t56\t345\t2398\n88\t4358\t112187\t522240\t305950\t636172\t419883\t56\t345\t2398\n89\t4358\t112187\t522240\t339257\t636172\t453190\t56\t345\t2398\n90\t4361\t112273\t514560\t302400\t628494\t416335\t56\t345\t2398\n91\t4357\t112156\t522240\t348844\t636166\t462771\t56\t345\t2398\n92\t4364\t112364\t508416\t266889\t622348\t380788\t57\t345\t2399\n93\t4357\t112156\t522240\t360299\t636166\t474185\t56\t345\t2398\n94\t4381\t112885\t522752\t277620\t636720\t391589\t72\t345\t2414\n"
+			}]
+		}
+	}, {
+		"text": "%sql\n",
+		"user": "anonymous",
+		"dateUpdated": "2017-03-09T09:02:42+0000",
+		"config": {
+			"colWidth": 12,
+			"enabled": true,
+			"results": {},
+			"editorSetting": {
+				"language": "sql"
+			},
+			"editorMode": "ace/mode/sql"
+		},
+		"settings": {
+			"params": {},
+			"forms": {}
+		},
+		"apps": [],
+		"jobName": "paragraph_1489050162500_241378825",
+		"id": "20170309-090242_1711341064",
+		"dateCreated": "2017-03-09T09:02:42+0000",
+		"status": "READY",
+		"progressUpdateIntervalMs": 500,
+		"focus": true,
+		"$$hashKey": "object:26463"
+	}],
+	"name": "threads",
+	"id": "2CASHF16D",
+	"angularObjects": {
+		"2CDCYTBBJ:shared_process": []
+	},
+	"config": {
+		"looknfeel": "default",
+		"personalizedMode": "false"
+	},
+	"info": {}
+}
