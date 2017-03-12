@@ -1,0 +1,19 @@
+version: '3'
+services:
+  producer:
+    image: asarkar/producer:1.0-SNAPSHOT
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  consumer:
+    image: asarkar/consumer:1.0-SNAPSHOT
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  kafka:
+    image: asarkar/kafka
+    environment:
+      HOSTNAME_COMMAND: kafka
+      ADVERTISED_PORT: 9092
