@@ -5,11 +5,15 @@ language: scala
 services:
   - docker
 
-before_script: cd yelp-dataload
+env:
+  - PROJECT_DIR=yelp-dataload
+  - PROJECT_DIR=ufo-sightings
 
 script:
-  - sbt clean docker:publishLocal
+  - cd $PROJECT_DIR && sbt clean docker:publishLocal
 
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-  - docker push asarkar/yelp-dataload
+  - docker push asarkar/yelp-dataload:1.0-SNAPSHOT
+  - docker push asarkar/ufo-sightings-producer:1.0-SNAPSHOT
+  - docker push asarkar/ufo-sightings-consumer:1.0-SNAPSHOT
