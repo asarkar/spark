@@ -57,7 +57,9 @@ lazy val commonDockerSettings = Seq(
   },
 
   dockerRepository := Some("asarkar"),
-  packageName in Docker := "ufo-sightings-" + name.value
+  packageName in Docker := "ufo-sightings-" + name.value,
+  // Delete when fixed: https://github.com/sbt/sbt-native-packager/issues/947
+  dockerAlias := DockerAlias(dockerRepository.value, None, "ufo-sightings-" + name.value, Some((version in Docker).value))
 )
 
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
@@ -75,7 +77,8 @@ lazy val producer = (project in file("producer"))
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "ch.qos.logback" % "logback-core" % logbackVersion % Runtime,
     "ch.qos.logback" % "logback-classic" % logbackVersion % Runtime,
-    "org.scalatest" %% "scalatest" % scalatestVersion % Test
+    "org.scalatest" %% "scalatest" % scalatestVersion % Test,
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test
   ))
   .dependsOn(domain)
   .enablePlugins(JavaAppPackaging)

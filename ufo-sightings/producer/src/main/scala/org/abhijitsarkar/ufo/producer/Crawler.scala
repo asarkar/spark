@@ -34,7 +34,7 @@ trait Crawler {
       .map(x => from.plusMonths(x.toLong))
       .log(s"${getClass.getName} - Processing")
       .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
-      .flatMapConcat(self.sightings)
+      .flatMapMerge(parallelism, self.sightings)
       .mapAsyncUnordered(parallelism)(t => {
         val (response, yearMonth) = (t._1, t._2)
         val body = Unmarshal(response.entity).to[String]

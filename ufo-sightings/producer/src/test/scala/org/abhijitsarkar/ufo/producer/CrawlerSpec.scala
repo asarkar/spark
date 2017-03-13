@@ -15,8 +15,8 @@ import scala.concurrent.{ExecutionContext, Future}
   * @author Abhijit Sarkar
   */
 
-class CrawlerSpec extends ActorContextDefaultImpl with AsyncFlatSpecLike with Matchers {
-  def localCrawler(statusCode: StatusCode) = new ActorContextDefaultImpl with Crawler with Client {
+class CrawlerSpec extends DefaultActorContext with AsyncFlatSpecLike with Matchers {
+  def localCrawler(statusCode: StatusCode) = new DefaultActorContext with Crawler with Client {
     override def sightings(yearMonth: YearMonth): Source[(HttpResponse, YearMonth), NotUsed] = {
       val resource = getClass.getResourceAsStream("/ndxe201701.html")
       val html = scala.io.Source.fromInputStream(resource, UTF_8.name()).mkString
@@ -29,7 +29,7 @@ class CrawlerSpec extends ActorContextDefaultImpl with AsyncFlatSpecLike with Ma
 
   override implicit val executionContext: ExecutionContext = system.dispatcher
 
-  val remoteCrawler = new ActorContextDefaultImpl with Crawler with HttpClient
+  val remoteCrawler = new DefaultActorContext with Crawler with HttpClient
 
   "Crawler" should "parse HTML when response OK" in {
     val dt = YearMonth.of(2017, 1)

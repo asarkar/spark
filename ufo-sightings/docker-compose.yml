@@ -1,19 +1,23 @@
 version: '3'
 services:
   producer:
-    image: asarkar/producer:1.0-SNAPSHOT
+    image: asarkar/ufo-sightings-producer:1.0-SNAPSHOT
     depends_on:
       - kafka
+      - consumer
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      FROM_YEAR_MONTH: 2016-01
   consumer:
-    image: asarkar/consumer:1.0-SNAPSHOT
+    image: asarkar/ufo-sightings-consumer:1.0-SNAPSHOT
     depends_on:
       - kafka
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "4040:4040"
   kafka:
     image: asarkar/kafka
     environment:
-      HOSTNAME_COMMAND: kafka
+      ADVERTISED_HOST: kafka
       ADVERTISED_PORT: 9092

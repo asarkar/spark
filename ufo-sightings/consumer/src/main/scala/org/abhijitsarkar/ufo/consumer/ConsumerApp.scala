@@ -3,6 +3,8 @@ package org.abhijitsarkar.ufo.consumer
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.{SparkConf, SparkContext}
 
+import scala.util.Try
+
 /**
   * @author Abhijit Sarkar
   */
@@ -12,7 +14,8 @@ object ConsumerApp extends Consumer {
   val sparkConfig = consumerConfig.getConfig("spark")
 
   val conf = new SparkConf()
-    .setMaster(sparkConfig.getString("master"))
+    .setMaster(Try(sparkConfig.getString("master"))
+      .getOrElse("local[*]"))
     .setAppName("ufo-sighting")
 
   override implicit def sc: SparkContext = SparkContext.getOrCreate(conf)

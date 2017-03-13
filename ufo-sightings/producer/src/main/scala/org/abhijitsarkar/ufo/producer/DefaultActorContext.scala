@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext
 /**
   * @author Abhijit Sarkar
   */
-class ActorContextDefaultImpl extends ActorContext {
+class DefaultActorContext extends ActorContext {
   override implicit val system: ActorSystem = ActorSystem("ufo-sightings")
 
   override implicit val executionContext: ExecutionContext = system.dispatcher
