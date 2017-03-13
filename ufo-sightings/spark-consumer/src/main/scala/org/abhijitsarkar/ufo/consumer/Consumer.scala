@@ -26,7 +26,7 @@ trait Consumer {
       "bootstrap.servers" -> kafkaConfig.getStringList("bootstrap.servers"),
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
-      "group.id" -> "ufo",
+      "group.id" -> "spark-consumer",
       "auto.offset.reset" -> kafkaConfig.getString("auto.offset.reset"),
       "enable.auto.commit" -> (kafkaConfig.getBoolean("enable.auto.commit"): java.lang.Boolean)
     )

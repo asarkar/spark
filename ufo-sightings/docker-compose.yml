@@ -1,7 +1,7 @@
 version: '3'
 services:
   producer:
-    image: asarkar/ufo-sightings-producer:1.0-SNAPSHOT
+    image: asarkar/sightings-akka-producer-consumer:1.0-SNAPSHOT
     depends_on:
       - kafka
       - consumer
@@ -9,7 +9,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       FROM_YEAR_MONTH: 2016-01
   consumer:
-    image: asarkar/ufo-sightings-consumer:1.0-SNAPSHOT
+    image: asarkar/sightings-spark-consumer:1.0-SNAPSHOT
     depends_on:
       - kafka
     environment:

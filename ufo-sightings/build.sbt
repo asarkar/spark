@@ -57,16 +57,16 @@ lazy val commonDockerSettings = Seq(
   },
 
   dockerRepository := Some("asarkar"),
-  packageName in Docker := "ufo-sightings-" + name.value,
+  // packageName in Docker := "sightings-" + name.value,
   // Delete when fixed: https://github.com/sbt/sbt-native-packager/issues/947
-  dockerAlias := DockerAlias(dockerRepository.value, None, "ufo-sightings-" + name.value, Some((version in Docker).value))
+  dockerAlias := DockerAlias(dockerRepository.value, None, "sightings-" + name.value, Some((version in Docker).value))
 )
 
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 
 val akkaHttpVersion = "10.0.4"
 
-lazy val producer = (project in file("producer"))
+lazy val `akka-producer-consumer` = (project in file("akka-producer-consumer"))
   .settings(commonSettings)
   .settings(libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-stream-kafka" % akkaStreamsKafkaVersion,
@@ -96,7 +96,7 @@ lazy val producer = (project in file("producer"))
 val configVersion = "1.3.1"
 val sparkVersion = "2.1.0"
 
-lazy val consumer = (project in file("consumer"))
+lazy val `spark-consumer` = (project in file("spark-consumer"))
   .settings(commonSettings)
   .settings(libraryDependencies ++= Seq(
     "com.typesafe" % "config" % configVersion,
@@ -128,5 +128,5 @@ lazy val consumer = (project in file("consumer"))
 
 lazy val `ufo-sightings` = (project in file("."))
   .settings(commonSettings)
-  .aggregate(producer, consumer)
+  .aggregate(`akka-producer-consumer`, `spark-consumer`)
 

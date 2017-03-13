@@ -24,10 +24,8 @@ trait Producer {
 
   implicit def system: ActorSystem
 
-  val batchSize = 12
-
-  def run(producerConfig: Config) = {
-    val bootstrapServers = Try(producerConfig.getString("kafka.bootstrap.servers"))
+  def run(config: Config) = {
+    val bootstrapServers = Try(config.getString("kafka.bootstrap.servers"))
       .getOrElse("127.0.0.1:9092")
 
     val producerSettings = ProducerSettings(system, new StringSerializer, new StringSerializer)
@@ -40,7 +38,7 @@ trait Producer {
       .map(s => new ProducerRecord[String, String](topic, s.toJson.compactPrint))
 
     val sink = akka.kafka.scaladsl.Producer.plainSink(producerSettings)
-    batches(producerConfig)
+    batches(config)
       .log(s"${classOf[Producer].getName} - Processing")
       .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .flatMapConcat((sightings _).tupled)
@@ -49,17 +47,18 @@ trait Producer {
       .runWith(sink)
   }
 
-  private[producer] def batches(producerConfig: Config) = {
-    val from = Try(producerConfig.getString("fromYearMonth"))
+  private[producer] def batches(config: Config) = {
+    val from = Try(config.getString("producer.fromYearMonth"))
       .map(YearMonth.parse)
       .getOrElse(YearMonth.now().withMonth(Month.JANUARY.getValue()))
-    val to = Try(producerConfig.getString("toYearMonth"))
+    val to = Try(config.getString("producer.toYearMonth"))
       .map(YearMonth.parse)
       .getOrElse(YearMonth.now())
-    val batchDurationMillis = Try(producerConfig.getLong("batchDurationMillis"))
+    val batchDurationMillis = Try(config.getLong("batchDurationMillis"))
       .getOrElse(30000L)
 
     val months = from.until(to, ChronoUnit.MONTHS).toInt + 1
+    val batchSize = 12
     val numBatches = scala.math.ceil(months.toDouble / batchSize).toInt
 
     import scala.concurrent.duration._
