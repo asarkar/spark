@@ -21,7 +21,7 @@ trait Client {
 trait HttpClient extends Client {
   implicit def system: ActorSystem
 
-  private val yearMonthFormatter = DateTimeFormatter.ofPattern("yyyyMM")
+  private[this] val yearMonthFormatter = DateTimeFormatter.ofPattern("yyyyMM")
 
   override def sightings(yearMonth: YearMonth): Source[(HttpResponse, YearMonth), NotUsed] = {
     Source.fromGraph(GraphDSL.create() { implicit b: GraphDSL.Builder[NotUsed] =>

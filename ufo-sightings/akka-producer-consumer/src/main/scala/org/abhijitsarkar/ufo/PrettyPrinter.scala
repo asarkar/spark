@@ -6,7 +6,7 @@ import scala.collection.immutable.TreeMap
   * @author Abhijit Sarkar
   */
 object PrettyPrinter {
-  private val printFormat: String = "| %-12s | %-8s |%n"
+  private[this] val printFormat: String = "| %-12s | %-8s |%n"
 
   def print(javaMap: java.util.Map[String, java.util.Map[String, Int]]) {
     import scala.collection.JavaConverters._

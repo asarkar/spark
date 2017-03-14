@@ -25,7 +25,7 @@ trait Crawler {
 
   implicit def materializer: Materializer
 
-  val parallelism = Runtime.getRuntime.availableProcessors * 2
+  private[this] val parallelism = Runtime.getRuntime.availableProcessors * 2
 
   final def sightings(from: YearMonth, to: YearMonth): Source[Sighting, NotUsed] = {
     val months = from.until(to, ChronoUnit.MONTHS) + 1

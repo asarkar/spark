@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.{BiConsumer, BiFunction}
 import java.util.{Map => JavaMap}
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 import akka.kafka.ConsumerMessage.CommittableOffsetBatch
 import akka.kafka.{ConsumerSettings, Subscriptions}
@@ -22,6 +22,9 @@ import scala.util.Try
 /**
   * @author Abhijit Sarkar
   */
+case class Heartbeat(ctl: akka.kafka.scaladsl.Consumer.Control,
+                     analytics: java.util.Map[String, java.util.Map[String, Int]])
+
 trait Consumer {
   implicit def system: ActorSystem
 
@@ -31,11 +34,11 @@ trait Consumer {
 
   type Accumulator = JavaMap[String, Int]
 
-  val parallelism = Runtime.getRuntime.availableProcessors * 2
-  val analytics: JavaMap[String, Accumulator] = new ConcurrentHashMap[String, Accumulator]
-  val counter = new AtomicLong(1)
+  private[this] val parallelism = Runtime.getRuntime.availableProcessors * 2
+  private[this] val analytics: JavaMap[String, Accumulator] = new ConcurrentHashMap[String, Accumulator]
+  private[this] val counter = new AtomicLong(1)
 
-  def run(config: Config) = {
+  def run(config: Config, terminator: ActorRef) = {
     val bootstrapServers = Try(config.getString("kafka.bootstrap.servers"))
       .getOrElse("127.0.0.1:9092")
 
@@ -45,7 +48,7 @@ trait Consumer {
       .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
 
     val batchSize = 12
-    akka.kafka.scaladsl.Consumer.committableSource(consumerSettings, Subscriptions.topics("ufo"))
+    val ctl = akka.kafka.scaladsl.Consumer.committableSource(consumerSettings, Subscriptions.topics("ufo"))
       .log(s"${getClass.getName} - Consuming")
       .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .map { msg =>
@@ -56,11 +59,12 @@ trait Consumer {
         batch.updated(elem)
       }
       .mapAsync(parallelism)(offsets => {
-        counter.incrementAndGet
         offsets.commitScaladsl()
       })
       .toMat(Sink.ignore)(Keep.left)
       .run
+
+    terminator ! Heartbeat(ctl, analytics)
   }
 
   private[this] def updateAnalytics(s: String) {
