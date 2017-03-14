@@ -15,5 +15,5 @@ script:
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker push asarkar/yelp-dataload:1.0-SNAPSHOT
-  - docker push asarkar/ufo-sightings-producer:1.0-SNAPSHOT
-  - docker push asarkar/ufo-sightings-consumer:1.0-SNAPSHOT
+  - docker push asarkar/ufo-sightings-akka:1.0-SNAPSHOT
+  - docker push asarkar/ufo-sightings-spark:1.0-SNAPSHOT
