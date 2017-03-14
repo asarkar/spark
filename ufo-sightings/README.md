@@ -16,3 +16,12 @@ See my [Kafka](https://github.com/asarkar/docker/tree/master/kafka) repository f
 
 To build the Docker images locally instead of using the ones from my Docker Cloud repo, 
 `bin/activator clean docker:publishLocal`
+
+# References
+[Akka Streams Kafka](http://doc.akka.io/docs/akka-stream-kafka/current/home.html)
+
+[activator-reactive-kafka-scala](https://github.com/softwaremill/activator-reactive-kafka-scala)
+
+[reactive-kafka-scala-example](https://github.com/makersu/reactive-kafka-scala-example#master)
+
+[Spark Streaming + Kafka Integration Guide](https://spark.apache.org/docs/latest/streaming-kafka-integration.html)
