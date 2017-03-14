@@ -1,5 +1,7 @@
 package org.abhijitsarkar.ufo
 
+import java.util.concurrent.atomic.AtomicLong
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import org.abhijitsarkar.ufo.consumer.Consumer
@@ -30,9 +32,9 @@ object SightingApp extends App {
     override implicit def executionContext: ExecutionContext = ac.executionContext
   }
 
-  val as = ac.system
-  val log = as.log
-  val config = as.settings.config.getConfig("sighting")
+  val system = ac.system
+  val log = system.log
+  val config = system.settings.config.getConfig("sighting")
 
   val f = producer.run(config)
 
@@ -43,15 +45,34 @@ object SightingApp extends App {
     case Failure(t) => log.error(t, "Producer failed!")
   }(ac.executionContext)
 
-  val timeout = Try(config.getLong("terminationTimeoutMillis"))
-    .getOrElse(2 * 60 * 1000L)
-
-  // Wait for all messages to be consumed
-  Thread.sleep(timeout)
-
   import scala.concurrent.duration._
 
-  log.warning("Stopping consumer.")
-  PrettyPrinter.print(consumer.analytics)
-  Await.result(ctl.shutdown.flatMap(_ => as.terminate)(ac.executionContext), timeout.milliseconds)
+  val batchDurationMillis = Try(config.getLong("batchDurationMillis"))
+    .getOrElse(30000L)
+    .milliseconds
+
+  val terminationTimeoutMillis = Try(config.getLong("terminationTimeoutMillis"))
+    .getOrElse(2 * 60 * 1000L)
+
+  val start = System.currentTimeMillis
+  val counter = new AtomicLong(0)
+
+  system.scheduler
+    .schedule(batchDurationMillis, batchDurationMillis, new Runnable {
+      override def run = {
+        val consumerCounter = consumer.counter.get
+        if (consumerCounter <= counter.get) {
+          log.warning("Detected idle consumer!")
+
+          if (System.currentTimeMillis - start > terminationTimeoutMillis) {
+            log.warning("Stopping consumer.")
+
+            PrettyPrinter.print(consumer.analytics)
+            Await.result(ctl.shutdown.flatMap(_ => system.terminate)(ac.executionContext), 1.second)
+          }
+        } else {
+          counter.set(consumerCounter)
+        }
+      }
+    })(ac.executionContext)
 }

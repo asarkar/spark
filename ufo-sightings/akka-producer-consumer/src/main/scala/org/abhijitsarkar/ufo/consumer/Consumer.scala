@@ -1,6 +1,7 @@
 package org.abhijitsarkar.ufo.consumer
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import java.util.function.{BiConsumer, BiFunction}
 import java.util.{Map => JavaMap}
 
@@ -32,6 +33,7 @@ trait Consumer {
 
   val parallelism = Runtime.getRuntime.availableProcessors * 2
   val analytics: JavaMap[String, Accumulator] = new ConcurrentHashMap[String, Accumulator]
+  val counter = new AtomicLong(1)
 
   def run(config: Config) = {
     val bootstrapServers = Try(config.getString("kafka.bootstrap.servers"))
@@ -53,7 +55,10 @@ trait Consumer {
       .batch(max = batchSize.toLong, first => CommittableOffsetBatch.empty.updated(first)) { (batch, elem) =>
         batch.updated(elem)
       }
-      .mapAsync(parallelism)(_.commitScaladsl())
+      .mapAsync(parallelism)(offsets => {
+        counter.incrementAndGet
+        offsets.commitScaladsl()
+      })
       .toMat(Sink.ignore)(Keep.left)
       .run
   }

@@ -6,7 +6,8 @@ with a delay introduced between consecutive years to simulate streaming. Months 
 The consumer reads from Kafka and calculates analytics like number of sightings per state, per month, per year, 
 per shape and holds the data in memory.
 
-After the producer and consumer are stopped, the analytics is printed to console  and the app is terminated.
+The app detects when the consumer is idle (thus, most likely done), and if it has been over a predefined amount of time, 
+the analytics is printed out and the app is terminated (I like how this is done :smile:).
 
 > See `application.conf` for configuration options.
 
