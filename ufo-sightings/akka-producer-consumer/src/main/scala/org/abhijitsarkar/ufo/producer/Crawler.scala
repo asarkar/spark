@@ -32,7 +32,7 @@ trait Crawler {
 
     Source.fromIterator(() => Iterator.range(0, months.toInt))
       .map(x => from.plusMonths(x.toLong))
-      .log(s"${getClass.getName} - Processing")
+      .log(s"${getClass.getName} - Crawling")
       .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .flatMapMerge(parallelism, self.sightings)
       .mapAsyncUnordered(parallelism)(t => {

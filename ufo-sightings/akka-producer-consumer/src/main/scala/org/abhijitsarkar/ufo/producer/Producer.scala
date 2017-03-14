@@ -39,7 +39,7 @@ trait Producer {
 
     val sink = akka.kafka.scaladsl.Producer.plainSink(producerSettings)
     batches(config)
-      .log(s"${classOf[Producer].getName} - Processing")
+      .log(s"${classOf[Producer].getName} - Producing")
       .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .flatMapConcat((sightings _).tupled)
       .via(flow)

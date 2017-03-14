@@ -56,10 +56,10 @@ lazy val commonDockerSettings = Seq(
     filtered :+ (fatJar -> ("lib/" + fatJar.getName))
   },
 
-  dockerRepository := Some("asarkar"),
+  dockerRepository := Some("asarkar")
   // packageName in Docker := "sightings-" + name.value,
   // Delete when fixed: https://github.com/sbt/sbt-native-packager/issues/947
-  dockerAlias := DockerAlias(dockerRepository.value, None, "sightings-" + name.value, Some((version in Docker).value))
+//  dockerAlias := DockerAlias(dockerRepository.value, None, "sightings-" + name.value, Some((version in Docker).value))
 )
 
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
@@ -84,6 +84,8 @@ lazy val `akka-producer-consumer` = (project in file("akka-producer-consumer"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonDockerSettings)
   .settings(Seq(
+    dockerAlias := DockerAlias(dockerRepository.value, None, "ufo-sightings-akka",
+      Some((version in Docker).value)),
     dockerCommands := Seq(
       Cmd("FROM", "openjdk:8u111-alpine"),
       Cmd("WORKDIR", "/"),
@@ -109,10 +111,13 @@ lazy val `spark-consumer` = (project in file("spark-consumer"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonDockerSettings)
   .settings(Seq(
-    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false, includeDependency = true),
+    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false,
+      includeDependency = true),
 
     dockerPackageMappings in Docker += (baseDirectory.value / "docker" / "spark-env.sh") -> "spark-env.sh",
     dockerPackageMappings in Docker += (baseDirectory.value / "docker" / "log4j.properties") -> "log4j.properties",
+
+    dockerAlias := DockerAlias(dockerRepository.value, None, "ufo-sightings-spark", Some((version in Docker).value)),
 
     // The default commands are shown by a) bin/activator shell b) show dockerCommands
     dockerCommands := Seq(

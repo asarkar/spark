@@ -8,7 +8,10 @@ import scala.collection.immutable.TreeMap
 object PrettyPrinter {
   private val printFormat: String = "| %-12s | %-8s |%n"
 
-  def print(map: Map[String, Map[String, Int]]) {
+  def print(javaMap: java.util.Map[String, java.util.Map[String, Int]]) {
+    import scala.collection.JavaConverters._
+    val map = javaMap.asScala.toMap.mapValues(_.asScala.toMap)
+
     List("state", "shape", "month", "year")
       .foreach(key => {
         System.out.format("+--------------+----------+%n")

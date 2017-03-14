@@ -5,7 +5,6 @@ import akka.stream.Materializer
 import org.abhijitsarkar.ufo.consumer.Consumer
 import org.abhijitsarkar.ufo.producer.{Crawler, DefaultActorContext, HttpClient, Producer}
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
@@ -45,19 +44,14 @@ object SightingApp extends App {
   }(ac.executionContext)
 
   val timeout = Try(config.getLong("terminationTimeoutMillis"))
-    .getOrElse(60000L).milliseconds
+    .getOrElse(2 * 60 * 1000L)
 
-  Thread.sleep(timeout._1)
+  // Wait for all messages to be consumed
+  Thread.sleep(timeout)
 
-  import scala.collection.JavaConverters._
+  import scala.concurrent.duration._
 
-  ctl.stop.onComplete {
-    case Success(map) => {
-      log.info("Consumer successfully completed.")
-      PrettyPrinter.print(consumer.analytics.asScala.toMap.mapValues(_.asScala.toMap))
-    }
-    case Failure(t) => log.error(t, "Consumer failed!")
-  }(ac.executionContext)
-
-  Await.result(ctl.stop.flatMap(_ => as.terminate)(ac.executionContext), timeout)
+  log.warning("Stopping consumer.")
+  PrettyPrinter.print(consumer.analytics)
+  Await.result(ctl.shutdown.flatMap(_ => as.terminate)(ac.executionContext), timeout.milliseconds)
 }

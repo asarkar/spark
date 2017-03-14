@@ -22,8 +22,8 @@ class ProducerSpec extends FlatSpec with Matchers {
 
   "Producer" should "group months from same year" in {
     val producerConfig = ConfigFactory.parseMap(Map[String, String](
-      "fromYearMonth" -> "2011-05",
-      "toYearMonth" -> "2013-11",
+      "producer.fromYearMonth" -> "2011-05",
+      "producer.toYearMonth" -> "2013-11",
       "batchDurationMillis" -> "500"
     ).asJava)
 

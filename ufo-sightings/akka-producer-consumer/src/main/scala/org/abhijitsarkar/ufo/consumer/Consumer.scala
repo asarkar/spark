@@ -44,7 +44,7 @@ trait Consumer {
 
     val batchSize = 12
     akka.kafka.scaladsl.Consumer.committableSource(consumerSettings, Subscriptions.topics("ufo"))
-      .log(s"${getClass.getName} - Processing")
+      .log(s"${getClass.getName} - Consuming")
       .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .map { msg =>
         updateAnalytics(msg.record.value)
@@ -54,7 +54,7 @@ trait Consumer {
         batch.updated(elem)
       }
       .mapAsync(parallelism)(_.commitScaladsl())
-      .toMat(Sink.head)(Keep.left)
+      .toMat(Sink.ignore)(Keep.left)
       .run
   }
 
