@@ -1,7 +1,7 @@
 package org.abhijitsarkar.ufo.consumer
 
 import com.typesafe.config.Config
-import org.abhijitsarkar.ufo.domain.Sighting
+import org.abhijitsarkar.ufo.commons.Sighting
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.SparkContext
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
@@ -19,7 +19,7 @@ trait Consumer {
 
   import scala.collection.JavaConverters._
 
-  def run(consumerConfig: Config) = {
+  def run(consumerConfig: Config, analytics: AnalyticsAccumulator) = {
     val kafkaConfig = consumerConfig.getConfig("kafka")
 
     val kafkaParams = Map[String, Object](
@@ -33,7 +33,7 @@ trait Consumer {
       .asJava
 
     val sparkConfig = consumerConfig.getConfig("spark")
-    val ssc = new StreamingContext(sc, Milliseconds(Try(sparkConfig.getLong("batchDurationMillis"))
+    val ssc = new StreamingContext(sc, Milliseconds(Try(sparkConfig.getLong("batchIntervalMillis"))
       .getOrElse(1000L)))
     val topics = Seq("ufo").asJava
     val stream = KafkaUtils.createDirectStream[String, String](
@@ -46,20 +46,23 @@ trait Consumer {
       .map(record => (record.key, record.value))
       .persist
 
-    import org.abhijitsarkar.ufo.domain.SightingProtocol._
-    import spray.json._
-    val byState = stream
-      .map(_._2.parseJson.convertTo[Sighting])
-      .filter(_.state.isDefined)
-      .map(_.state.get)
-      .countByValue()
+    val empty = ""
 
-    println("--- New stream by state ---")
-    byState
-      .foreachRDD(rdd => {
-        println("--- New RDD by state ---")
-        rdd.foreach(println)
-      })
+    import org.abhijitsarkar.ufo.commons.SightingProtocol._
+    import spray.json._
+    stream
+      .map(_._2.parseJson.convertTo[Sighting])
+      .map(x =>
+        (x.state,
+          x.shape,
+          x.eventDateTime.map(_.getMonth.name),
+          x.eventDateTime.map(_.getYear.toString)))
+      .foreachRDD(_.foreach(x => {
+        x._1.map(y => analytics.add(("state", y)))
+        x._2.map(y => analytics.add(("shape", y)))
+        x._3.map(y => analytics.add(("month", y)))
+        x._4.map(y => analytics.add(("year", y)))
+      }))
 
     ssc.start
     ssc.awaitTerminationOrTimeout(Try(sparkConfig.getLong("terminationTimeoutMillis"))

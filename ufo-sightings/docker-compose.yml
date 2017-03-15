@@ -1,22 +1,30 @@
 version: '3'
 services:
-  producer-consumer:
-    image: asarkar/ufo-sightings-akka:1.0-SNAPSHOT
+  akka-producer:
+    image: asarkar/ufo-sightings-akka-producer:1.0-SNAPSHOT
     depends_on:
       - kafka
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       FROM_YEAR_MONTH: 2016-01
-#  consumer:
-#    image: asarkar/ufo-sightings-spark:1.0-SNAPSHOT
-#    depends_on:
-#      - kafka
-#    environment:
-#      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#    ports:
-#      - "4040:4040"
+  akka-consumer:
+    image: asarkar/ufo-sightings-akka-consumer:1.0-SNAPSHOT
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  spark-consumer:
+    image: asarkar/ufo-sightings-spark-consumer:1.0-SNAPSHOT
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "4040:4040"
   kafka:
     image: asarkar/kafka
+    ports:
+      - "9092:9092"
     environment:
       ADVERTISED_HOST: kafka
       ADVERTISED_PORT: 9092

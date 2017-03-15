@@ -1,6 +1,7 @@
 package org.abhijitsarkar.ufo.consumer
 
 import com.typesafe.config.ConfigFactory
+import org.abhijitsarkar.ufo.commons.PrettyPrinter
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.util.Try
@@ -21,6 +22,10 @@ object ConsumerApp extends Consumer {
   override implicit def sc: SparkContext = SparkContext.getOrCreate(conf)
 
   def main(args: Array[String]): Unit = {
-    run(consumerConfig)
+    val analytics = new AnalyticsAccumulator
+    sc.register(analytics, "analytics")
+    run(consumerConfig, analytics)
+
+    PrettyPrinter.print(analytics.value)
   }
 }
