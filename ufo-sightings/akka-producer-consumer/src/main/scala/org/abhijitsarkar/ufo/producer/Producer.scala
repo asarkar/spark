@@ -10,6 +10,7 @@ import akka.stream.Attributes
 import akka.stream.scaladsl.{Flow, Source}
 import com.typesafe.config.Config
 import org.abhijitsarkar.ufo.domain.Sighting
+import org.apache.kafka.clients.producer.ProducerConfig._
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 
@@ -30,6 +31,10 @@ trait Producer {
 
     val producerSettings = ProducerSettings(system, new StringSerializer, new StringSerializer)
       .withBootstrapServers(bootstrapServers)
+      .withProperty(ACKS_CONFIG, "1")
+      .withProperty(BATCH_SIZE_CONFIG, "100")
+      .withProperty(BUFFER_MEMORY_CONFIG, "4194304") // 4 MB
+      .withProperty(RETRIES_CONFIG, "2") // may change message order
 
     import org.abhijitsarkar.ufo.domain.SightingProtocol._
     import spray.json._

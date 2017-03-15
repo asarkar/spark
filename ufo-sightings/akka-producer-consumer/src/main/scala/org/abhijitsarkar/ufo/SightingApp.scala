@@ -41,6 +41,6 @@ object SightingApp extends App {
     case Failure(t) => log.error(t, "Producer failed!")
   }(ac.executionContext)
 
-  private[this] val terminator = system.actorOf(ConsumerTerminator.props(config), "consumer-terminator")
+  private[this] val terminator = system.actorOf(Terminator.props(config), "terminator")
   consumer.run(config, terminator)
 }

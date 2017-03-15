@@ -13,7 +13,7 @@ import scala.util.Try
 /**
   * @author Abhijit Sarkar
   */
-class ConsumerTerminator(val config: Config) extends Actor with ActorLogging {
+class Terminator(val config: Config) extends Actor with ActorLogging {
   private[this] val consumerActive = new AtomicBoolean(false)
   private[this] val consumerCtl = new AtomicReference[Consumer.Control]()
   private[this] val analytics = new AtomicReference[java.util.Map[String, java.util.Map[String, Int]]]()
@@ -30,6 +30,7 @@ class ConsumerTerminator(val config: Config) extends Actor with ActorLogging {
   private[this] val start = System.currentTimeMillis
 
   private[this] val system = context.system
+  private[this] implicit val ec = system.dispatcher
   system.scheduler
     .schedule(batchDurationMillis, batchDurationMillis, new Runnable {
       override def run = {
@@ -40,12 +41,12 @@ class ConsumerTerminator(val config: Config) extends Actor with ActorLogging {
             log.warning("Stopping consumer.")
 
             PrettyPrinter.print(analytics.get)
-            Await.result(consumerCtl.get.shutdown.flatMap(_ => system.terminate)(system.dispatcher),
+            Await.result(consumerCtl.get.shutdown.flatMap(_ => system.terminate),
               1.second)
           }
         }
       }
-    })(system.dispatcher)
+    })
 
   override def receive: Receive = {
     case Heartbeat(ctl, analytics) => {
@@ -56,6 +57,6 @@ class ConsumerTerminator(val config: Config) extends Actor with ActorLogging {
   }
 }
 
-object ConsumerTerminator {
-  def props(config: Config) = Props(new ConsumerTerminator(config))
+object Terminator {
+  def props(config: Config) = Props(new Terminator(config))
 }

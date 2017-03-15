@@ -1,7 +1,6 @@
 package org.abhijitsarkar.ufo.consumer
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
 import java.util.function.{BiConsumer, BiFunction}
 import java.util.{Map => JavaMap}
 
@@ -13,7 +12,7 @@ import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Attributes, Materializer}
 import com.typesafe.config.Config
 import org.abhijitsarkar.ufo.domain.Sighting
-import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 
 import scala.concurrent.ExecutionContext
@@ -36,7 +35,6 @@ trait Consumer {
 
   private[this] val parallelism = Runtime.getRuntime.availableProcessors * 2
   private[this] val analytics: JavaMap[String, Accumulator] = new ConcurrentHashMap[String, Accumulator]
-  private[this] val counter = new AtomicLong(1)
 
   def run(config: Config, terminator: ActorRef) = {
     val bootstrapServers = Try(config.getString("kafka.bootstrap.servers"))
@@ -45,7 +43,7 @@ trait Consumer {
     val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
       .withBootstrapServers(bootstrapServers)
       .withGroupId("akka-consumer")
-      .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+      .withProperty(AUTO_OFFSET_RESET_CONFIG, "earliest")
 
     val batchSize = 12
     val ctl = akka.kafka.scaladsl.Consumer.committableSource(consumerSettings, Subscriptions.topics("ufo"))
