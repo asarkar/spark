@@ -46,8 +46,6 @@ trait Consumer {
       .map(record => (record.key, record.value))
       .persist
 
-    val empty = ""
-
     import org.abhijitsarkar.ufo.commons.SightingProtocol._
     import spray.json._
     stream
