@@ -26,7 +26,7 @@ object ProducerApp extends App {
   private[this] val log = system.log
   private[this] val config = system.settings.config.getConfig("sighting")
 
-  val result = producer.run(config)
+  private[this] val result = producer.run(config)
 
   private[this] implicit val ec = ac.executionContext
   result.onComplete {
