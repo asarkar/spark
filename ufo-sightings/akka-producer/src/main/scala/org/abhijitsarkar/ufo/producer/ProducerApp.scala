@@ -14,21 +14,22 @@ import scala.util.{Failure, Success, Try}
 object ProducerApp extends App {
   private[this] val ac = new DefaultActorContext
 
-  private[this] val producer = new Producer with Crawler with HttpClient {
+  private[this] val producer = new Producer with HtmlScraper with HttpClient {
     override implicit def executionContext: ExecutionContext = ac.executionContext
 
-    override implicit def materializer: Materializer = ac.materializer
-
     override implicit def system: ActorSystem = ac.system
+
+    override implicit def materializer: Materializer = ac.materializer
   }
 
   private[this] val system = ac.system
   private[this] val log = system.log
   private[this] val config = system.settings.config.getConfig("sighting")
 
-  private[this] val result = producer.run(config)
+  private[this] implicit val executionContext = ac.executionContext
+  private[this] implicit val materializer = ac.materializer
+  private[this] val result = producer.runnableGraph(config).run()
 
-  private[this] implicit val ec = ac.executionContext
   result.onComplete {
     case Success(_) => log.info("Producer successfully completed.")
     case Failure(t) => log.error(t, "Producer failed!")

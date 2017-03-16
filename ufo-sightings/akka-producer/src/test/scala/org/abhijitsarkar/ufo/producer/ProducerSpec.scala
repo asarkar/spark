@@ -15,7 +15,7 @@ import org.scalatest.{FlatSpec, Matchers}
   */
 
 class ProducerSpec extends FlatSpec with Matchers {
-  val producer = new DefaultActorContext with Producer with Crawler with Client {
+  val producer = new DefaultActorContext with Producer with HtmlScraper with Client {
     override def sightings(yearMonth: YearMonth): Source[(HttpResponse, YearMonth), NotUsed] = ???
   }
 

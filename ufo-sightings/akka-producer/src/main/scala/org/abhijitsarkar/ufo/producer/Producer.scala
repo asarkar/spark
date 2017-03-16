@@ -7,7 +7,7 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.kafka.ProducerSettings
 import akka.stream.Attributes
-import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.scaladsl.{Flow, Keep, Source}
 import com.typesafe.config.Config
 import org.abhijitsarkar.ufo.commons.Sighting
 import org.apache.kafka.clients.producer.ProducerConfig._
@@ -21,11 +21,11 @@ import scala.util.Try
   */
 // c.f. http://doc.akka.io/docs/akka-stream-kafka/current/producer.html
 trait Producer {
-  self: Crawler =>
+  self: HtmlScraper =>
 
   implicit def system: ActorSystem
 
-  def run(config: Config) = {
+  def runnableGraph(config: Config) = {
     val bootstrapServers = Try(config.getString("kafka.bootstrap.servers"))
       .getOrElse("127.0.0.1:9092")
 
@@ -49,7 +49,7 @@ trait Producer {
       .flatMapConcat((sightings _).tupled)
       .via(flow)
       .mergeSubstreams
-      .runWith(sink)
+      .toMat(sink)(Keep.right)
   }
 
   private[producer] def batches(config: Config) = {

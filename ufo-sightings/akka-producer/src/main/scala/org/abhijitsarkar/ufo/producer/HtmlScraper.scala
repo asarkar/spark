@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * @author Abhijit Sarkar
   */
-trait Crawler {
+trait HtmlScraper {
   self: Client =>
 
   implicit def executionContext: ExecutionContext

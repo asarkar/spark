@@ -16,8 +16,8 @@ import scala.concurrent.{ExecutionContext, Future}
   * @author Abhijit Sarkar
   */
 
-class CrawlerSpec extends ufo.DefaultActorContext with AsyncFlatSpecLike with Matchers {
-  def localCrawler(statusCode: StatusCode) = new ufo.DefaultActorContext with Crawler with Client {
+class HtmlScraperSpec extends ufo.DefaultActorContext with AsyncFlatSpecLike with Matchers {
+  def localScraper(statusCode: StatusCode) = new ufo.DefaultActorContext with HtmlScraper with Client {
     override def sightings(yearMonth: YearMonth): Source[(HttpResponse, YearMonth), NotUsed] = {
       val resource = getClass.getResourceAsStream("/ndxe201701.html")
       val html = scala.io.Source.fromInputStream(resource, UTF_8.name()).mkString
@@ -30,11 +30,11 @@ class CrawlerSpec extends ufo.DefaultActorContext with AsyncFlatSpecLike with Ma
 
   override implicit val executionContext: ExecutionContext = system.dispatcher
 
-  val remoteCrawler = new ufo.DefaultActorContext with Crawler with HttpClient
+  val remoteScraper = new ufo.DefaultActorContext with HtmlScraper with HttpClient
 
-  "Crawler" should "parse HTML when response OK" in {
+  "Scraper" should "parse HTML when response OK" in {
     val dt = YearMonth.of(2017, 1)
-    val sightings = localCrawler(StatusCodes.OK).sightings(dt, dt)
+    val sightings = localScraper(StatusCodes.OK).sightings(dt, dt)
       .runFold(Seq.empty[Sighting])(_ :+ _)
 
     import org.abhijitsarkar.ufo.commons.SightingProtocol._
@@ -53,7 +53,7 @@ class CrawlerSpec extends ufo.DefaultActorContext with AsyncFlatSpecLike with Ma
     val resource = getClass.getResourceAsStream("/ndxe201701.html")
     val html = scala.io.Source.fromInputStream(resource, UTF_8.name()).mkString
 
-    val sightings = remoteCrawler.responseMapper(Future.successful(html), YearMonth.of(2017, 1))(StatusCodes.OK)
+    val sightings = remoteScraper.responseMapper(Future.successful(html), YearMonth.of(2017, 1))(StatusCodes.OK)
 
     import org.abhijitsarkar.ufo.commons.SightingProtocol._
     import spray.json._
@@ -70,14 +70,14 @@ class CrawlerSpec extends ufo.DefaultActorContext with AsyncFlatSpecLike with Ma
   it should "fail when response not OK" in {
     val dt = YearMonth.of(2017, 1)
     recoverToSucceededIf[RuntimeException] {
-      localCrawler(StatusCodes.InternalServerError).sightings(dt, dt)
+      localScraper(StatusCodes.InternalServerError).sightings(dt, dt)
         .runFold(Seq.empty[Sighting])(_ :+ _)
     }
   }
 
   it should "get all sightings for Feb 2017" in {
     val dt = YearMonth.of(2017, 2)
-    val sightings = remoteCrawler.sightings(dt, dt)
+    val sightings = remoteScraper.sightings(dt, dt)
       .runFold(Seq.empty[Sighting])(_ :+ _)
 
     sightings.map { s =>

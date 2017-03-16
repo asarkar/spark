@@ -48,19 +48,18 @@ trait Consumer {
 
     import org.abhijitsarkar.ufo.commons.SightingProtocol._
     import spray.json._
+
+    type MaybeValue = (String, Option[String])
     stream
       .map(_._2.parseJson.convertTo[Sighting])
       .map(x =>
-        (x.state,
-          x.shape,
-          x.eventDateTime.map(_.getMonth.name),
-          x.eventDateTime.map(_.getYear.toString)))
-      .foreachRDD(_.foreach(x => {
-        x._1.foreach(y => analytics.add(("state", y)))
-        x._2.foreach(y => analytics.add(("shape", y)))
-        x._3.foreach(y => analytics.add(("month", y)))
-        x._4.foreach(y => analytics.add(("year", y)))
-      }))
+        (("state", x.state),
+          ("shape", x.shape),
+          ("month", x.eventDateTime.map(_.getMonth.name)),
+          ("year", x.eventDateTime.map(_.getYear.toString))))
+      .foreachRDD(_.foreach(_.productIterator
+        .map(_.asInstanceOf[MaybeValue]) // Tuples can be heterogeneous, thus productIterator returns Any
+        .foreach(x => x._2.foreach(y => analytics.add((x._1, y))))))
 
     ssc.start
     ssc.awaitTerminationOrTimeout(Try(sparkConfig.getLong("terminationTimeoutMillis"))
