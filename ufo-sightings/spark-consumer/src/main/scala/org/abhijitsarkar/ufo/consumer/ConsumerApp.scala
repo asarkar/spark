@@ -22,7 +22,7 @@ object ConsumerApp extends Consumer {
   override implicit def sc: SparkContext = SparkContext.getOrCreate(conf)
 
   def main(args: Array[String]): Unit = {
-    val analytics = new AnalyticsAccumulator
+    val analytics = new AnalyticsAccumulatorV2
     sc.register(analytics, "analytics")
     run(consumerConfig, analytics)
 

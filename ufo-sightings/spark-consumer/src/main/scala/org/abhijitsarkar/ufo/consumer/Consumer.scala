@@ -19,7 +19,7 @@ trait Consumer {
 
   import scala.collection.JavaConverters._
 
-  def run(consumerConfig: Config, analytics: AnalyticsAccumulator) = {
+  def run(consumerConfig: Config, analytics: AnalyticsAccumulatorV2) = {
     val kafkaConfig = consumerConfig.getConfig("kafka")
 
     val kafkaParams = Map[String, Object](
@@ -56,10 +56,10 @@ trait Consumer {
           x.eventDateTime.map(_.getMonth.name),
           x.eventDateTime.map(_.getYear.toString)))
       .foreachRDD(_.foreach(x => {
-        x._1.map(y => analytics.add(("state", y)))
-        x._2.map(y => analytics.add(("shape", y)))
-        x._3.map(y => analytics.add(("month", y)))
-        x._4.map(y => analytics.add(("year", y)))
+        x._1.foreach(y => analytics.add(("state", y)))
+        x._2.foreach(y => analytics.add(("shape", y)))
+        x._3.foreach(y => analytics.add(("month", y)))
+        x._4.foreach(y => analytics.add(("year", y)))
       }))
 
     ssc.start

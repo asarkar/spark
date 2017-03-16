@@ -1,9 +1,6 @@
 package org.abhijitsarkar.ufo.consumer
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.{BiConsumer, BiFunction}
-import java.util.{Map => JavaMap}
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -12,7 +9,7 @@ import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Attributes, Materializer}
 import com.typesafe.config.Config
-import org.abhijitsarkar.ufo.commons.Sighting
+import org.abhijitsarkar.ufo.commons.{AnalyticsAccumulator, Sighting}
 import org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 
@@ -29,10 +26,11 @@ trait Consumer {
 
   implicit def executionContext: ExecutionContext
 
-  type Accumulator = JavaMap[String, Int]
+  private[this] val _analytics: AnalyticsAccumulator = new AnalyticsAccumulator
+
+  def analytics = _analytics.value
 
   private[this] val parallelism = Runtime.getRuntime.availableProcessors * 2
-  val analytics: JavaMap[String, Accumulator] = new ConcurrentHashMap[String, Accumulator]
   val recordsProcessed = new AtomicLong(1)
 
   def run(config: Config) = {
@@ -64,52 +62,21 @@ trait Consumer {
       .run
   }
 
+  import org.abhijitsarkar.ufo.commons.SightingProtocol._
+  import spray.json._
+
   private[this] def updateAnalytics(s: String) {
-    def merge(oldMap: Accumulator, newMap: Accumulator) = {
-      newMap.forEach(new BiConsumer[String, Int] {
-        override def accept(k: String, v: Int): Unit = {
-          oldMap.merge(k, v, new BiFunction[Int, Int, Int] {
-            override def apply(i: Int, j: Int): Int = i + j
-          })
-        }
-      })
-
-      oldMap
-    }
-
-    def accumulator(k: String) = {
-      val m = new ConcurrentHashMap[String, Int]
-      m.put(k, 1)
-
-      m
-    }
-
-    import org.abhijitsarkar.ufo.commons.SightingProtocol._
-    import spray.json._
-    val sighting = s.parseJson.convertTo[Sighting]
-
-    val accMerger = new BiFunction[Accumulator, Accumulator, Accumulator] {
-      override def apply(t: Accumulator, u: Accumulator): Accumulator = merge(t, u)
-    }
-
-    sighting.state
-      .foreach(state => {
-        analytics.merge("state", accumulator(state.toUpperCase), accMerger)
-      })
-
-    sighting.shape
-      .foreach(shape => {
-        analytics.merge("shape", accumulator(shape.toUpperCase), accMerger)
-      })
-
-    sighting.eventDateTime
-      .foreach(e => {
-        analytics.merge("month", accumulator(e.getMonth.name.toUpperCase), accMerger)
-      })
-
-    sighting.eventDateTime
-      .foreach(e => {
-        analytics.merge("year", accumulator(e.getYear.toString.toUpperCase), accMerger)
+    Option(s.parseJson.convertTo[Sighting])
+      .map(x =>
+        (x.state,
+          x.shape,
+          x.eventDateTime.map(_.getMonth.name),
+          x.eventDateTime.map(_.getYear.toString)))
+      .foreach(x => {
+        x._1.foreach(y => _analytics.add(("state", y)))
+        x._2.foreach(y => _analytics.add(("shape", y)))
+        x._3.foreach(y => _analytics.add(("month", y)))
+        x._4.foreach(y => _analytics.add(("year", y)))
       })
   }
 }
